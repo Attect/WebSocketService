@@ -1,0 +1,63 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 28
+
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "androidx.appcompat:appcompat:${appcompat_version}"
+    testImplementation "junit:junit:${junit_version}"
+    androidTestImplementation "androidx.test:runner:${runner_version}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${espresso_core_version}"
+    implementation "androidx.core:core-ktx:${core_ktx_version}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation project(path: ':staticviewmodelstore')
+    implementation "androidx.appcompat:appcompat:${appcompat_version}"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycle_viewmodel_ktx_version}"
+    implementation "androidx.fragment:fragment-ktx:${fragment_ktx_version}"
+    // ViewModel and LiveData
+    implementation "androidx.lifecycle:lifecycle-extensions:${lifecycle_extensions_version}"
+
+    // alternatively - just LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata:${lifecycle_livedata_version}"
+
+    // alternatively - Lifecycles only (no ViewModel or LiveData).
+
+    //     Support library depends on this lightweight import
+    implementation "androidx.lifecycle:lifecycle-runtime:${lifecycle_runtime_version}"
+
+    // alternately - if using Java8, use the following instead of compiler
+    implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycle_common_java8_version}"
+    implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+}
+repositories {
+    mavenCentral()
+}

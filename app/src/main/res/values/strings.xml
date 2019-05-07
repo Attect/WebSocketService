@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">WebSocketService</string>
+    <string name="hex">十六进制</string>
+    <string name="send">发送</string>
+    <string name="server_label">Server</string>
+    <string name="client_label">Client</string>
+    <string name="type_hex_size">HEX:%d</string>
+    <string name="type_string_size">String:%d</string>
+    <string name="send_input_hint">输入发送内容</string>
+    <string name="connect">连接</string>
+    <string name="disconnect">断开</string>
+    <string name="address_hint">输入服务器地址，ws://或wss://开头</string>
+    <string name="create_notification">驻留通知</string>
+    <!--<string name="default_websocket_server">wss://echo.websocket.org</string>-->
+    <string name="default_websocket_server">ws://192.168.1.149:8887</string>
+    <string name="description_keep_websocket_active_in_background">维持WebSocket后台活动通知</string>
+    <string name="description_use_notification_keep_websocket">为了防止程序被“暂停”，App需要一个通知来保持前台应用状态，否则当App后台后，WebSocket将在几分钟内被冻结</string>
+    <string name="connecting">连接中</string>
+    <string name="connected">已连接</string>
+    <string name="ws_closing">正在断开</string>
+    <string name="retrying">重试中</string>
+</resources>

@@ -1,0 +1,43 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId 'studio.attect.websocketservice.example'
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "androidx.appcompat:appcompat:${appcompat_version}"
+    implementation "androidx.core:core-ktx:${core_ktx_version}"
+    implementation "androidx.constraintlayout:constraintlayout:${constraintlayout_version}"
+    testImplementation "junit:junit:${junit_version}"
+    androidTestImplementation "androidx.test:runner:${runner_version}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${espresso_core_version}"
+    implementation project(path: ':websocketservice')
+    implementation "androidx.recyclerview:recyclerview:${recyclerview_version}"
+    implementation "androidx.cardview:cardview:${cardview_version}"
+    implementation project(path: ':staticviewmodelstore')
+    implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+}
