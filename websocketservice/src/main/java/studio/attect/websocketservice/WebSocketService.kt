@@ -148,7 +148,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         if (serviceViewModel.stopByUser.value != true) {
             serviceViewModel.status.postValue(WebSocketStatus.RECONNECTING)
             Log.w(TAG, "disconnect by environment, auto reconnect after 5000ms")
-            Thread() {
+            Thread {
                 try {
                     Thread.sleep(5000)
                     connectToServer()

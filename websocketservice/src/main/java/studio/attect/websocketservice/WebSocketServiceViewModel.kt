@@ -14,35 +14,35 @@ class WebSocketServiceViewModel :ViewModel(){
     /**
      * 接收到的字符串数据
      */
-    public val receiveStringData = MutableLiveData<String?>()
+    val receiveStringData = MutableLiveData<String?>()
 
     /**
      * 接收到的二进制数据
      */
-    public val receiveBytesData = MutableLiveData<ByteString?>()
+    val receiveBytesData = MutableLiveData<ByteString?>()
 
     /**
      * 要发送的字符串数据
      */
-    public val sendStringData = MutableLiveData<String?>()
+    val sendStringData = MutableLiveData<String?>()
 
     /**
      * 要发送的二进制数据
      */
-    public val sendBytesData = MutableLiveData<ByteString?>()
+    val sendBytesData = MutableLiveData<ByteString?>()
 
 
     /**
      * 给服务断开连接的信号
      * 注意不要将其内容设为null
      */
-    public val stopByUser = MutableLiveData<Boolean>()
+    val stopByUser = MutableLiveData<Boolean>()
 
     /**
      * 服务状态
      * 模糊的
      */
-    public val status = MutableLiveData<WebSocketStatus>()
+    val status = MutableLiveData<WebSocketStatus>()
 
 
 }
