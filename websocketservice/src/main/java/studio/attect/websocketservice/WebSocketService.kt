@@ -149,7 +149,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             Thread {
                 try {
                     Thread.sleep(5000)
-                    connectToServer()
+                    if(serviceViewModel.stopByUser.value != true) connectToServer()
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }
