@@ -41,6 +41,7 @@ class WebSocketServiceViewModel :ViewModel(){
     /**
      * 服务状态
      * 模糊的
+     * 取值为null时，表示service没有启动
      */
     val status = MutableLiveData<WebSocketStatus>()
 

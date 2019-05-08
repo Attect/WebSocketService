@@ -121,8 +121,9 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         instanceCommandLock = false
 
         //清除viewModel中的发送数据
-        serviceViewModel.sendStringData.postValue(null)
-        serviceViewModel.sendBytesData.postValue(null)
+        serviceViewModel.sendStringData.value = null
+        serviceViewModel.sendBytesData.value = null
+        serviceViewModel.status.value = null
     }
 
     /**
