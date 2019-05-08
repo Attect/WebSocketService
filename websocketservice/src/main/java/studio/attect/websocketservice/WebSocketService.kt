@@ -220,19 +220,19 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         /**
          * 服务器地址的key
          */
-        private const val CONFIG_SERVER = "serverAddress"
+        const val CONFIG_SERVER = "serverAddress"
 
         /**
          * 伴随一个通知启动
          * 通知id的key
          */
-        private const val CONFIG_CREATE_NOTIFICATION_ID = "withNotification_ID"
+        const val CONFIG_CREATE_NOTIFICATION_ID = "withNotification_ID"
 
         /**
          * 伴随一个通知启动
          * notification的key
          */
-        private const val CONFIG_CREATE_NOTIFICATION = "withNotification"
+        const val CONFIG_CREATE_NOTIFICATION = "withNotification"
 
         /**
          * onCreate方法锁
