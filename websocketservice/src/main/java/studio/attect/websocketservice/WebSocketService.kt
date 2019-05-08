@@ -26,7 +26,8 @@ import java.util.*
  * @date 2019-05-04
  */
 open class WebSocketService : StaticViewModelLifecycleService() {
-    private lateinit var serviceViewModel: WebSocketServiceViewModel
+    lateinit var serviceViewModel: WebSocketServiceViewModel
+    private set
 
     private var webSocket: WebSocket? = null
 
