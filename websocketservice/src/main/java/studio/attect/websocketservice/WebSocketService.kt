@@ -18,6 +18,7 @@ import java.util.*
 
 /**
  * WebSocketService
+ * 是一个LocalService
  * 只支持启动一次，支持绑定前台通知
  * 通过ViewModel进行发送/接收数据传递
  *
@@ -102,8 +103,6 @@ open class WebSocketService : StaticViewModelLifecycleService() {
                         )
                     }
                 }
-
-
             }
         }
 
@@ -133,7 +132,6 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         if (serviceViewModel.stopByUser.value == true) {
             serviceViewModel.stopByUser.postValue(false)
         }
-
 
         serverUrl?.let {
             serviceViewModel.status.postValue(WebSocketStatus.CONNECTING)
@@ -188,14 +186,14 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             super.onMessage(webSocket, text)
             Log.d(TAG, "WebSocket onStringMessage:$text")
             stringDataQueue.offer(text)
-            serviceViewModel.receiveStringData.postValue(null) //触发队列
+            serviceViewModel.receiveStringData.postValue(null) //触发队列,必须直接post null
         }
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
             super.onMessage(webSocket, bytes)
             Log.d(TAG, "WebSocket onHexMessage:${bytes.size()}")
             bytesDataQueue.offer(bytes)
-            serviceViewModel.receiveBytesData.postValue(null) //触发队列
+            serviceViewModel.receiveBytesData.postValue(null) //触发队列,必须直接post null
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {

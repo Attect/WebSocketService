@@ -11,6 +11,7 @@ import android.content.Intent.CATEGORY_LAUNCHER
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
@@ -20,9 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import okio.ByteString
 import studio.attect.staticviewmodelstore.StaticViewModelLifecycleActivity
-import studio.attect.websocketservice.WebSocketService
-import studio.attect.websocketservice.WebSocketServiceViewModel
-import studio.attect.websocketservice.WebSocketStatus
+import studio.attect.websocketservice.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -129,16 +128,21 @@ class MainActivity : StaticViewModelLifecycleActivity() {
             }
         })
 
-        webSocketViewModel.receiveStringData.observe(this,androidx.lifecycle.Observer { content ->
-            content?.let {
-                webSocketViewModel.receiveStringData.value = null //将数据置空，触发另一方队列推送，但一定要注意必须在数据不为null时处理
-                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, it, null, false, System.currentTimeMillis()))
+        webSocketViewModel.receiveStringData.observe(this, object : StringDataObserver(webSocketViewModel) {
+            override fun onReceive(t: String) {
+                Log.d("Test","first string observe receive:$t")
+                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, t, null, false, System.currentTimeMillis()))
             }
         })
-        webSocketViewModel.receiveBytesData.observe(this,androidx.lifecycle.Observer { content ->
-            content?.let {
-                webSocketViewModel.receiveBytesData.value = null
-                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, null, it.toByteArray(), true, System.currentTimeMillis()))
+        webSocketViewModel.receiveStringData.observe(this, object : StringDataObserver(webSocketViewModel) {
+            override fun onReceive(t: String) {
+                Log.d("Test","second string observe receive:$t")
+            }
+        })
+
+        webSocketViewModel.receiveBytesData.observe(this,object :BytesDataObserver(webSocketViewModel){
+            override fun onReceive(b: ByteString) {
+                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, null, b.toByteArray(), true, System.currentTimeMillis()))
             }
         })
     }

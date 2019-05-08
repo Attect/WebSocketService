@@ -7,6 +7,8 @@ Demo可用作WebSocket测试工具
 
 基于okhttp3
 
+这是一个LocalService，并不支持运行在独立进程中
+
 ## 用法
 导入此项目自己阅读app模块的代码
 

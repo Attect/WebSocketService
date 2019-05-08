@@ -44,5 +44,24 @@ class WebSocketServiceViewModel :ViewModel(){
      */
     val status = MutableLiveData<WebSocketStatus>()
 
+    /**
+     * 外部使用时请求获取下一个文本数据
+     * @see StringDataObserver.onChanged
+     */
+    internal fun requireNextStringData(){
+        receiveStringData.value?.let {
+            receiveStringData.postValue(null)
+        }
+    }
+
+    /**
+     * 外部使用时请求获取下一个二进制数据
+     * @see BytesDataObserver.onChanged
+     */
+    internal fun requireNextBytesData(){
+        receiveBytesData.value?.let {
+            receiveBytesData.postValue(null)
+        }
+    }
 
 }
