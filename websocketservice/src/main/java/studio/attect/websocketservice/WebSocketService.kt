@@ -182,6 +182,11 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             super.onClosing(webSocket, code, reason)
             serviceViewModel.status.postValue(WebSocketStatus.CLOSING)
             Log.e(TAG, "WebSocket is closing, because [$code]$reason ")
+            if (serviceViewModel.stopByUser.value == true) {
+                stopSelf()
+            } else {
+                reconnectToServer()
+            }
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
