@@ -41,7 +41,6 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "onCreate instanceCreateLock:$instanceCreateLock")
         if (instanceCreateLock) return
         instanceCreateLock = true
         getViewModel(this)?.let {
@@ -49,13 +48,11 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         }
         serviceViewModel.sendStringData.observe(this, Observer { content ->
             content?.let {
-                Log.d(TAG,"new send string:$it")
                 webSocket?.send(it)
             }
         })
         serviceViewModel.sendBytesData.observe(this, Observer { content ->
             content?.let {
-                Log.d(TAG,"new send hex size:${it.size()}")
                 webSocket?.send(it)
             }
         })
@@ -79,7 +76,6 @@ open class WebSocketService : StaticViewModelLifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val defaultResult = super.onStartCommand(intent, Service.START_FLAG_REDELIVERY, startId)
         //这个方法全局只允许被跑一次
-        Log.d(TAG, "onStartCommand instanceCommandLock:$instanceCommandLock")
         if (instanceCommandLock) return defaultResult
         instanceCommandLock = true
 
