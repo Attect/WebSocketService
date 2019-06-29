@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
 import studio.attect.staticviewmodelstore.StaticViewModelLifecycleActivity
 import studio.attect.websocketservice.*
 import java.text.SimpleDateFormat
@@ -83,7 +84,7 @@ class MainActivity : StaticViewModelLifecycleActivity() {
             editText.text?.toString()?.let {
                 if(hexCheckBox.isChecked){
                     val byteArray = it.hexStringToByteArray()
-                    val byteString = ByteString.of(byteArray,0,byteArray.size)
+                    val byteString = byteArray.toByteString(0, byteArray.size)
                     webSocketViewModel.sendBytesData.value = byteString
                     recyclerViewAdapter.addContent(BubbleData(SENDER_CLIENT, null, byteArray, true, System.currentTimeMillis()))
                 }else{

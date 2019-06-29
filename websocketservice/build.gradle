@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
@@ -57,6 +57,7 @@ dependencies {
     // alternately - if using Java8, use the following instead of compiler
     implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycle_common_java8_version}"
     implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+//    implementation "org.conscrypt:conscrypt-openjdk-uber:${conscrypt_openjdk_uber_version}"
 }
 repositories {
     mavenCentral()

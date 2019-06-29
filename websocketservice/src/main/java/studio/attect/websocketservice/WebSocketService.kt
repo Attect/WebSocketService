@@ -194,7 +194,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
             super.onMessage(webSocket, bytes)
-            Log.d(TAG, "WebSocket onHexMessage:${bytes.size()}")
+            Log.d(TAG, "WebSocket onHexMessage:${bytes.size}")
             bytesDataQueue.offer(bytes)
             serviceViewModel.receiveBytesData.postValue(null) //触发队列,必须直接post null
         }
