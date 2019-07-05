@@ -58,6 +58,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         })
         serviceViewModel.stopByUser.observe(this, Observer {
             if (it) {
+                Log.d(TAG,"stop signal from user")
                 disconnectFromServer()
             }
         })
