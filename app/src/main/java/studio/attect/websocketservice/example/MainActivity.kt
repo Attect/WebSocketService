@@ -38,7 +38,6 @@ class MainActivity : StaticViewModelLifecycleActivity() {
     private lateinit var webSocketViewModel: WebSocketServiceViewModel
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -57,23 +56,25 @@ class MainActivity : StaticViewModelLifecycleActivity() {
 
         actionButton.setOnClickListener { view ->
             (view as AppCompatTextView).let { textView ->
-                if(webSocketViewModel.status.value!=WebSocketStatus.CONNECTED){
+                if (webSocketViewModel.status.value != WebSocketStatus.CONNECTED) {
                     addressEditText.text?.toString()?.let { url ->
                         textView.disableClick()
                         addressEditText.isEnabled = false
                         notificationCheckBox.isEnabled = false
+                        val handshakeHeader = WebSocketHandshakeHeader("client", "WebSocketService")
                         if (notificationCheckBox.isChecked) {
                             WebSocketService.startService(
                                 this,
                                 url,
                                 NOTIFICATION_ID,
-                                createForeRunningNotification("WebSocket", "connect to $url")
+                                createForeRunningNotification("WebSocket", "connect to $url"),
+                                arrayListOf(handshakeHeader)
                             )
                         } else {
-                            WebSocketService.startService(this, url)
+                            WebSocketService.startService(this, url, arrayListOf(handshakeHeader))
                         }
                     }
-                }else{
+                } else {
                     webSocketViewModel.stopByUser.value = true
                 }
 
@@ -82,70 +83,147 @@ class MainActivity : StaticViewModelLifecycleActivity() {
 
         sendButton.setOnClickListener {
             editText.text?.toString()?.let {
-                if(hexCheckBox.isChecked){
+                if (hexCheckBox.isChecked) {
                     val byteArray = it.hexStringToByteArray()
                     val byteString = byteArray.toByteString(0, byteArray.size)
                     webSocketViewModel.sendBytesData.value = byteString
-                    recyclerViewAdapter.addContent(BubbleData(SENDER_CLIENT, null, byteArray, true, System.currentTimeMillis()))
-                }else{
+                    recyclerViewAdapter.addContent(
+                        BubbleData(
+                            SENDER_CLIENT,
+                            null,
+                            byteArray,
+                            true,
+                            System.currentTimeMillis()
+                        )
+                    )
+                } else {
                     webSocketViewModel.sendStringData.value = it
-                    recyclerViewAdapter.addContent(BubbleData(SENDER_CLIENT, it, null, false, System.currentTimeMillis()))
+                    recyclerViewAdapter.addContent(
+                        BubbleData(
+                            SENDER_CLIENT,
+                            it,
+                            null,
+                            false,
+                            System.currentTimeMillis()
+                        )
+                    )
                 }
             }
         }
         sendButton.disableClick()
 
-        webSocketViewModel.status.observe(this,androidx.lifecycle.Observer { webSocketStatus ->
+        webSocketViewModel.status.observe(this, androidx.lifecycle.Observer { webSocketStatus ->
             webSocketStatus?.let {
-                when (it){
+                when (it) {
                     WebSocketStatus.DISCONNECTED -> {
                         actionButton.enableClick()
                         actionButton.setText(R.string.connect)
                         sendButton.disableClick()
                         addressEditText.isEnabled = true
                         notificationCheckBox.isEnabled = true
-                        recyclerViewAdapter.addContent(BubbleData(SENDER_SYSTEM, "连接已断开", null, false, System.currentTimeMillis()))
+                        recyclerViewAdapter.addContent(
+                            BubbleData(
+                                SENDER_SYSTEM,
+                                "连接已断开",
+                                null,
+                                false,
+                                System.currentTimeMillis()
+                            )
+                        )
                     }
                     WebSocketStatus.CONNECTING -> {
                         actionButton.setText(R.string.connecting)
-                        recyclerViewAdapter.addContent(BubbleData(SENDER_SYSTEM, "连接中", null, false, System.currentTimeMillis()))
+                        recyclerViewAdapter.addContent(
+                            BubbleData(
+                                SENDER_SYSTEM,
+                                "连接中",
+                                null,
+                                false,
+                                System.currentTimeMillis()
+                            )
+                        )
                     }
                     WebSocketStatus.CONNECTED -> {
                         actionButton.setText(R.string.disconnect)
                         sendButton.enableClick()
-                        recyclerViewAdapter.addContent(BubbleData(SENDER_SYSTEM, "已连接", null, false, System.currentTimeMillis()))
+                        recyclerViewAdapter.addContent(
+                            BubbleData(
+                                SENDER_SYSTEM,
+                                "已连接",
+                                null,
+                                false,
+                                System.currentTimeMillis()
+                            )
+                        )
                         actionButton.enableClick()
                     }
                     WebSocketStatus.CLOSING -> {
                         actionButton.setText(R.string.ws_closing)
-                        recyclerViewAdapter.addContent(BubbleData(SENDER_SYSTEM, "正在断开连接", null, false, System.currentTimeMillis()))
+                        recyclerViewAdapter.addContent(
+                            BubbleData(
+                                SENDER_SYSTEM,
+                                "正在断开连接",
+                                null,
+                                false,
+                                System.currentTimeMillis()
+                            )
+                        )
                     }
                     WebSocketStatus.RECONNECTING -> {
                         actionButton.disableClick()
                         actionButton.setText(R.string.retrying)
-                        recyclerViewAdapter.addContent(BubbleData(SENDER_SYSTEM, "重新连接中", null, false, System.currentTimeMillis()))
+                        recyclerViewAdapter.addContent(
+                            BubbleData(
+                                SENDER_SYSTEM,
+                                "重新连接中",
+                                null,
+                                false,
+                                System.currentTimeMillis()
+                            )
+                        )
                     }
                 }
             }
         })
 
-        webSocketViewModel.receiveStringData.observe(this, object : StringDataObserver(webSocketViewModel) {
-            override fun onReceive(t: String) {
-                Log.d("Test","first string observe receive:$t")
-                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, t, null, false, System.currentTimeMillis()))
-            }
-        })
-        webSocketViewModel.receiveStringData.observe(this, object : StringDataObserver(webSocketViewModel) {
-            override fun onReceive(t: String) {
-                Log.d("Test","second string observe receive:$t")
-            }
-        })
+        webSocketViewModel.receiveStringData.observe(
+            this,
+            object : StringDataObserver(webSocketViewModel) {
+                override fun onReceive(t: String) {
+                    Log.d("Test", "first string observe receive:$t")
+                    recyclerViewAdapter.addContent(
+                        BubbleData(
+                            SENDER_SERVER,
+                            t,
+                            null,
+                            false,
+                            System.currentTimeMillis()
+                        )
+                    )
+                }
+            })
+        webSocketViewModel.receiveStringData.observe(
+            this,
+            object : StringDataObserver(webSocketViewModel) {
+                override fun onReceive(t: String) {
+                    Log.d("Test", "second string observe receive:$t")
+                }
+            })
 
-        webSocketViewModel.receiveBytesData.observe(this,object :BytesDataObserver(webSocketViewModel){
-            override fun onReceive(b: ByteString) {
-                recyclerViewAdapter.addContent(BubbleData(SENDER_SERVER, null, b.toByteArray(), true, System.currentTimeMillis()))
-            }
-        })
+        webSocketViewModel.receiveBytesData.observe(this,
+            object : BytesDataObserver(webSocketViewModel) {
+                override fun onReceive(b: ByteString) {
+                    recyclerViewAdapter.addContent(
+                        BubbleData(
+                            SENDER_SERVER,
+                            null,
+                            b.toByteArray(),
+                            true,
+                            System.currentTimeMillis()
+                        )
+                    )
+                }
+            })
     }
 
     /**
@@ -199,7 +277,8 @@ class MainActivity : StaticViewModelLifecycleActivity() {
             addCategory(CATEGORY_LAUNCHER)
         }
 
-        val backToMainActivityPendingIntent = PendingIntent.getActivity(this, 0, backToMainActivityIntent, 0)
+        val backToMainActivityPendingIntent =
+            PendingIntent.getActivity(this, 0, backToMainActivityIntent, 0)
 
         val notification = NotificationCompat.Builder(this, channel).apply {
             setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
@@ -216,7 +295,6 @@ class MainActivity : StaticViewModelLifecycleActivity() {
 
         return notification
     }
-
 
 
     inner class MyRecyclerViewAdapter : RecyclerView.Adapter<BubbleViewHolder>() {
@@ -241,9 +319,27 @@ class MainActivity : StaticViewModelLifecycleActivity() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BubbleViewHolder {
             return when (viewType) {
-                SENDER_SERVER -> BubbleViewHolder(layoutInflater.inflate(R.layout.bubble_server, parent, false))
-                SENDER_CLIENT -> BubbleViewHolder(layoutInflater.inflate(R.layout.bubble_client, parent, false))
-                else -> BubbleViewHolder(layoutInflater.inflate(R.layout.bubble_system,parent,false))
+                SENDER_SERVER -> BubbleViewHolder(
+                    layoutInflater.inflate(
+                        R.layout.bubble_server,
+                        parent,
+                        false
+                    )
+                )
+                SENDER_CLIENT -> BubbleViewHolder(
+                    layoutInflater.inflate(
+                        R.layout.bubble_client,
+                        parent,
+                        false
+                    )
+                )
+                else -> BubbleViewHolder(
+                    layoutInflater.inflate(
+                        R.layout.bubble_system,
+                        parent,
+                        false
+                    )
+                )
             }
         }
 

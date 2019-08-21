@@ -35,6 +35,8 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
     private var notificationId: Int = Int.MIN_VALUE
 
+    private val handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()
+
     private val stringDataQueue = LinkedList<String>()
 
     private val bytesDataQueue = LinkedList<ByteString>()
@@ -84,6 +86,10 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         intent?.let {
             //获得服务器地址
             if (intent.hasExtra(CONFIG_SERVER)) {
+                if(intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)){
+                    handshakeHeaders.clear()
+                    handshakeHeaders.addAll(intent.getParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS))
+                }
                 serverUrl = intent.getStringExtra(CONFIG_SERVER)
                 connectToServer()
             } else {
@@ -134,7 +140,11 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
         serverUrl?.let {
             serviceViewModel.status.postValue(WebSocketStatus.CONNECTING)
-            webSocket = OkHttpClient().newWebSocket(Request.Builder().url(it).build(), webSocketListener)
+            val builder = Request.Builder().url(it)
+            handshakeHeaders.forEach {
+                builder.addHeader(it.key,it.value)
+            }
+            webSocket = OkHttpClient().newWebSocket(builder.build(), webSocketListener)
             return
         }
         throw IllegalStateException("Can't connect to WebSocket server because serverUrl is null")
@@ -226,6 +236,11 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         const val CONFIG_SERVER = "serverAddress"
 
         /**
+         * 握手请求头参数
+         */
+        const val CONFIG_HANDSHAKE_HEADERS = "handshakeHeaders"
+
+        /**
          * 伴随一个通知启动
          * 通知id的key
          */
@@ -261,9 +276,11 @@ open class WebSocketService : StaticViewModelLifecycleService() {
          * @param context App上下文
          * @param serverUrl 服务器地址
          */
-        fun startService(context: Context, serverUrl: String) {
+        @JvmOverloads
+        fun startService(context: Context, serverUrl: String,handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
+                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS,handshakeHeaders)
             })
         }
 
@@ -274,11 +291,13 @@ open class WebSocketService : StaticViewModelLifecycleService() {
          * @param notificationId 已经创建的通知的id
          * @param notification 已经创建的通知本体
          */
-        fun startService(context: Context, serverUrl: String, notificationId: Int, notification: Notification) {
+        @JvmOverloads
+        fun startService(context: Context, serverUrl: String, notificationId: Int, notification: Notification,handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
                 putExtra(CONFIG_CREATE_NOTIFICATION_ID, notificationId)
                 putExtra(CONFIG_CREATE_NOTIFICATION, notification)
+                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS,handshakeHeaders)
             })
         }
 
