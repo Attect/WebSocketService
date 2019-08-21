@@ -5,7 +5,7 @@ Android WebSocket Service实现
 
 Demo可用作WebSocket测试工具
 
-基于okhttp3
+基于okhttp 4.1
 
 这是一个LocalService，并不支持运行在独立进程中
 
@@ -19,6 +19,7 @@ Demo可用作WebSocket测试工具
  1. 轻松的获取连接状态
  1. 可选的后台持续运行功能
  1. 自动重连
+ 1.自定义协议升级握手header
  
  ## 数据传递
  Service与其它安卓组件进行数据交换不是一件很方便的事情
