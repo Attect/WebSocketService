@@ -14,6 +14,7 @@ import studio.attect.staticviewmodelstore.StaticViewModelLifecycleService
 import studio.attect.staticviewmodelstore.StaticViewModelStore
 import java.lang.IllegalStateException
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -27,7 +28,7 @@ import java.util.*
  */
 open class WebSocketService : StaticViewModelLifecycleService() {
     lateinit var serviceViewModel: WebSocketServiceViewModel
-    private set
+        private set
 
     private var webSocket: WebSocket? = null
 
@@ -35,7 +36,9 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
     private var notificationId: Int = Int.MIN_VALUE
 
-    private val handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()
+    private val handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf()
+
+    private var pingInterval:Long = 0L
 
     private val stringDataQueue = LinkedList<String>()
 
@@ -60,17 +63,17 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         })
         serviceViewModel.stopByUser.observe(this, Observer {
             if (it) {
-                Log.d(TAG,"stop signal from user")
+                Log.d(TAG, "stop signal from user")
                 disconnectFromServer()
             }
         })
-        serviceViewModel.receiveStringData.observe(this, Observer { content->
-            if(content == null && stringDataQueue.size > 0){
+        serviceViewModel.receiveStringData.observe(this, Observer { content ->
+            if (content == null && stringDataQueue.size > 0) {
                 serviceViewModel.receiveStringData.value = stringDataQueue.poll()
             }
         })
-        serviceViewModel.receiveBytesData.observe(this, Observer { content->
-            if(content == null && bytesDataQueue.size > 0){
+        serviceViewModel.receiveBytesData.observe(this, Observer { content ->
+            if (content == null && bytesDataQueue.size > 0) {
                 serviceViewModel.receiveBytesData.value = bytesDataQueue.poll()
             }
         })
@@ -86,17 +89,26 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         intent?.let {
             //获得服务器地址
             if (intent.hasExtra(CONFIG_SERVER)) {
-                if(intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)){
+                if (intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)) {
                     handshakeHeaders.clear()
-                    handshakeHeaders.addAll(intent.getParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS))
+                    handshakeHeaders.addAll(
+                        intent.getParcelableArrayListExtra(
+                            CONFIG_HANDSHAKE_HEADERS
+                        )
+                    )
                 }
+                if(intent.hasExtra(CONFIG_PING_INTERVAL)) pingInterval = intent.getLongExtra(
+                    CONFIG_PING_INTERVAL,0L)
                 serverUrl = intent.getStringExtra(CONFIG_SERVER)
                 connectToServer()
             } else {
                 return defaultResult //没有设定服务器地址
             }
             //如果需要创建前台服务
-            if (intent.hasExtra(CONFIG_CREATE_NOTIFICATION_ID) && intent.hasExtra(CONFIG_CREATE_NOTIFICATION)) {
+            if (intent.hasExtra(CONFIG_CREATE_NOTIFICATION_ID) && intent.hasExtra(
+                    CONFIG_CREATE_NOTIFICATION
+                )
+            ) {
                 notificationId = intent.getIntExtra(CONFIG_CREATE_NOTIFICATION_ID, Int.MIN_VALUE)
                 notificationId.let {
                     if (it > Int.MIN_VALUE) {
@@ -140,11 +152,13 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
         serverUrl?.let {
             serviceViewModel.status.postValue(WebSocketStatus.CONNECTING)
-            val builder = Request.Builder().url(it)
+            val okHttpBuilder = OkHttpClient.Builder()
+            okHttpBuilder.pingInterval(pingInterval,TimeUnit.MILLISECONDS)
+            val requestBuilder = Request.Builder().url(it)
             handshakeHeaders.forEach {
-                builder.addHeader(it.key,it.value)
+                requestBuilder.addHeader(it.key, it.value)
             }
-            webSocket = OkHttpClient().newWebSocket(builder.build(), webSocketListener)
+            webSocket = okHttpBuilder.build().newWebSocket(requestBuilder.build(), webSocketListener)
             return
         }
         throw IllegalStateException("Can't connect to WebSocket server because serverUrl is null")
@@ -158,7 +172,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             Thread {
                 try {
                     Thread.sleep(5000)
-                    if(serviceViewModel.stopByUser.value != true) connectToServer()
+                    if (serviceViewModel.stopByUser.value != true) connectToServer()
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }
@@ -253,6 +267,12 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         const val CONFIG_CREATE_NOTIFICATION = "withNotification"
 
         /**
+         * 心跳频率
+         * 单位毫秒
+         */
+        const val CONFIG_PING_INTERVAL = "pingInterval"
+
+        /**
          * onCreate方法锁
          * true时表示已经有一个逻辑实例在跑了
          */
@@ -275,12 +295,20 @@ open class WebSocketService : StaticViewModelLifecycleService() {
          * 启动服务
          * @param context App上下文
          * @param serverUrl 服务器地址
+         * @param handshakeHeaders 握手HTTP自定义头部数据
+         * @param pingInterval 心跳ping间隔，0禁用，单位毫秒
          */
         @JvmOverloads
-        fun startService(context: Context, serverUrl: String,handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()) {
+        fun startService(
+            context: Context,
+            serverUrl: String,
+            handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf(),
+            pingInterval :Long= 0L
+        ) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
-                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS,handshakeHeaders)
+                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS, handshakeHeaders)
+                putExtra(CONFIG_PING_INTERVAL,pingInterval)
             })
         }
 
@@ -290,20 +318,33 @@ open class WebSocketService : StaticViewModelLifecycleService() {
          * @param serverUrl 服务器地址
          * @param notificationId 已经创建的通知的id
          * @param notification 已经创建的通知本体
+         * @param handshakeHeaders 握手HTTP自定义头部数据
+         * @param pingInterval 心跳ping间隔，0禁用，单位毫秒
          */
         @JvmOverloads
-        fun startService(context: Context, serverUrl: String, notificationId: Int, notification: Notification,handshakeHeaders:ArrayList<WebSocketHandshakeHeader> = arrayListOf()) {
+        fun startService(
+            context: Context,
+            serverUrl: String,
+            notificationId: Int,
+            notification: Notification,
+            handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf(),
+            pingInterval :Long= 0L
+        ) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
                 putExtra(CONFIG_CREATE_NOTIFICATION_ID, notificationId)
                 putExtra(CONFIG_CREATE_NOTIFICATION, notification)
-                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS,handshakeHeaders)
+                putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS, handshakeHeaders)
+                putExtra(CONFIG_PING_INTERVAL,pingInterval)
             })
         }
 
         @JvmStatic
         fun getViewModel(caller: StaticViewModelStore.StaticViewModelStoreCaller): WebSocketServiceViewModel? {
-            return caller.getStaticViewModel(WEB_SOCKET_STATIC_VIEW_STORE_KEY, WebSocketServiceViewModel::class.java)
+            return caller.getStaticViewModel(
+                WEB_SOCKET_STATIC_VIEW_STORE_KEY,
+                WebSocketServiceViewModel::class.java
+            )
         }
 
     }

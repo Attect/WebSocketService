@@ -68,10 +68,11 @@ class MainActivity : StaticViewModelLifecycleActivity() {
                                 url,
                                 NOTIFICATION_ID,
                                 createForeRunningNotification("WebSocket", "connect to $url"),
-                                arrayListOf(handshakeHeader)
+                                arrayListOf(handshakeHeader),
+                                5000
                             )
                         } else {
-                            WebSocketService.startService(this, url, arrayListOf(handshakeHeader))
+                            WebSocketService.startService(this, url, arrayListOf(handshakeHeader),5000)
                         }
                     }
                 } else {
