@@ -12,7 +12,6 @@ import okhttp3.*
 import okio.ByteString
 import studio.attect.staticviewmodelstore.StaticViewModelLifecycleService
 import studio.attect.staticviewmodelstore.StaticViewModelStore
-import java.lang.IllegalStateException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -209,8 +208,6 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             Log.e(TAG, "WebSocket is closing, because [$code]$reason ")
             if (serviceViewModel.stopByUser.value == true) {
                 stopSelf()
-            } else {
-                reconnectToServer(webSocket)
             }
         }
 
@@ -233,9 +230,8 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             serviceViewModel.status.postValue(WebSocketStatus.DISCONNECTED)
             Log.e(TAG, "WebSocket is closed, because [$code]$reason ")
             if (serviceViewModel.stopByUser.value == true) {
+                webSocket.cancel()
                 stopSelf()
-            } else {
-                reconnectToServer(webSocket)
             }
         }
     }
