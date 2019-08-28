@@ -154,6 +154,8 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             serviceViewModel.status.postValue(WebSocketStatus.CONNECTING)
             val okHttpBuilder = OkHttpClient.Builder()
             okHttpBuilder.pingInterval(pingInterval,TimeUnit.MILLISECONDS)
+            okHttpBuilder.retryOnConnectionFailure(true)
+            okHttpBuilder.connectTimeout(5000,TimeUnit.MILLISECONDS)
             val requestBuilder = Request.Builder().url(it)
             handshakeHeaders.forEach {
                 requestBuilder.addHeader(it.key, it.value)
@@ -164,7 +166,8 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         throw IllegalStateException("Can't connect to WebSocket server because serverUrl is null")
     }
 
-    private fun reconnectToServer() {
+    private fun reconnectToServer(webSocket: WebSocket) {
+        webSocket.cancel()
         //自动重连
         if (serviceViewModel.stopByUser.value != true) {
             serviceViewModel.status.postValue(WebSocketStatus.RECONNECTING)
@@ -196,7 +199,8 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             super.onFailure(webSocket, t, response)
             serviceViewModel.status.postValue(WebSocketStatus.DISCONNECTED)
-            reconnectToServer()
+            Log.d(TAG, "WebSocket onFailure")
+            reconnectToServer(webSocket)
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -206,7 +210,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             if (serviceViewModel.stopByUser.value == true) {
                 stopSelf()
             } else {
-                reconnectToServer()
+                reconnectToServer(webSocket)
             }
         }
 
@@ -231,7 +235,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             if (serviceViewModel.stopByUser.value == true) {
                 stopSelf()
             } else {
-                reconnectToServer()
+                reconnectToServer(webSocket)
             }
         }
     }
