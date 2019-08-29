@@ -199,6 +199,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             super.onFailure(webSocket, t, response)
             serviceViewModel.status.postValue(WebSocketStatus.DISCONNECTED)
             Log.d(TAG, "WebSocket onFailure")
+            t.printStackTrace()
             reconnectToServer(webSocket)
         }
 
