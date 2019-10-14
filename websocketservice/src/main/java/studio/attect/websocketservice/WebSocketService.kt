@@ -78,7 +78,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         })
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val defaultResult = super.onStartCommand(intent, Service.START_FLAG_REDELIVERY, startId)
         //这个方法全局只允许被跑一次
         if (instanceCommandLock) return defaultResult
@@ -124,7 +124,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         return defaultResult
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
     }
