@@ -37,7 +37,7 @@ open class WebSocketService : StaticViewModelLifecycleService() {
 
     private val handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf()
 
-    private var pingInterval:Long = 0L
+    private var pingInterval: Long = 0L
 
     private val stringDataQueue = LinkedList<String>()
 
@@ -84,42 +84,41 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         if (instanceCommandLock) return defaultResult
         instanceCommandLock = true
 
-        if (intent == null) Log.e(TAG, "onStartCommand intent is null")
-        intent?.let {
-            //获得服务器地址
-            if (intent.hasExtra(CONFIG_SERVER)) {
-                if (intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)) {
-                    handshakeHeaders.clear()
-                    handshakeHeaders.addAll(
-                        intent.getParcelableArrayListExtra(
-                            CONFIG_HANDSHAKE_HEADERS
+        //获得服务器地址
+        if (intent.hasExtra(CONFIG_SERVER)) {
+            if (intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)) {
+                handshakeHeaders.clear()
+                handshakeHeaders.addAll(
+                    intent.getParcelableArrayListExtra(
+                        CONFIG_HANDSHAKE_HEADERS
+                    )
+                )
+            }
+            if (intent.hasExtra(CONFIG_PING_INTERVAL)) pingInterval = intent.getLongExtra(
+                CONFIG_PING_INTERVAL, 0L
+            )
+            serverUrl = intent.getStringExtra(CONFIG_SERVER)
+            connectToServer()
+        } else {
+            return defaultResult //没有设定服务器地址
+        }
+        //如果需要创建前台服务
+        if (intent.hasExtra(CONFIG_CREATE_NOTIFICATION_ID) && intent.hasExtra(
+                CONFIG_CREATE_NOTIFICATION
+            )
+        ) {
+            notificationId = intent.getIntExtra(CONFIG_CREATE_NOTIFICATION_ID, Int.MIN_VALUE)
+            notificationId.let {
+                if (it > Int.MIN_VALUE) {
+                    startForeground(
+                        it, intent.getParcelableExtra(
+                            CONFIG_CREATE_NOTIFICATION
                         )
                     )
                 }
-                if(intent.hasExtra(CONFIG_PING_INTERVAL)) pingInterval = intent.getLongExtra(
-                    CONFIG_PING_INTERVAL,0L)
-                serverUrl = intent.getStringExtra(CONFIG_SERVER)
-                connectToServer()
-            } else {
-                return defaultResult //没有设定服务器地址
-            }
-            //如果需要创建前台服务
-            if (intent.hasExtra(CONFIG_CREATE_NOTIFICATION_ID) && intent.hasExtra(
-                    CONFIG_CREATE_NOTIFICATION
-                )
-            ) {
-                notificationId = intent.getIntExtra(CONFIG_CREATE_NOTIFICATION_ID, Int.MIN_VALUE)
-                notificationId.let {
-                    if (it > Int.MIN_VALUE) {
-                        startForeground(
-                            it, intent.getParcelableExtra(
-                                CONFIG_CREATE_NOTIFICATION
-                            )
-                        )
-                    }
-                }
             }
         }
+
 
         return defaultResult
     }
@@ -152,14 +151,15 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         serverUrl?.let {
             serviceViewModel.status.postValue(WebSocketStatus.CONNECTING)
             val okHttpBuilder = OkHttpClient.Builder()
-            okHttpBuilder.pingInterval(pingInterval,TimeUnit.MILLISECONDS)
+            okHttpBuilder.pingInterval(pingInterval, TimeUnit.MILLISECONDS)
             okHttpBuilder.retryOnConnectionFailure(true)
-            okHttpBuilder.connectTimeout(5000,TimeUnit.MILLISECONDS)
+            okHttpBuilder.connectTimeout(5000, TimeUnit.MILLISECONDS)
             val requestBuilder = Request.Builder().url(it)
             handshakeHeaders.forEach {
                 requestBuilder.addHeader(it.key, it.value)
             }
-            webSocket = okHttpBuilder.build().newWebSocket(requestBuilder.build(), webSocketListener)
+            webSocket =
+                okHttpBuilder.build().newWebSocket(requestBuilder.build(), webSocketListener)
             return
         }
         throw IllegalStateException("Can't connect to WebSocket server because serverUrl is null")
@@ -304,12 +304,12 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             context: Context,
             serverUrl: String,
             handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf(),
-            pingInterval :Long= 0L
+            pingInterval: Long = 0L
         ) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
                 putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS, handshakeHeaders)
-                putExtra(CONFIG_PING_INTERVAL,pingInterval)
+                putExtra(CONFIG_PING_INTERVAL, pingInterval)
             })
         }
 
@@ -329,14 +329,14 @@ open class WebSocketService : StaticViewModelLifecycleService() {
             notificationId: Int,
             notification: Notification,
             handshakeHeaders: ArrayList<WebSocketHandshakeHeader> = arrayListOf(),
-            pingInterval :Long= 0L
+            pingInterval: Long = 0L
         ) {
             context.startService(Intent(context, WebSocketService::class.java).apply {
                 putExtra(CONFIG_SERVER, serverUrl)
                 putExtra(CONFIG_CREATE_NOTIFICATION_ID, notificationId)
                 putExtra(CONFIG_CREATE_NOTIFICATION, notification)
                 putParcelableArrayListExtra(CONFIG_HANDSHAKE_HEADERS, handshakeHeaders)
-                putExtra(CONFIG_PING_INTERVAL,pingInterval)
+                putExtra(CONFIG_PING_INTERVAL, pingInterval)
             })
         }
 
