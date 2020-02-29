@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <option name="delegatedBuild" value="false" />
+        <option name="testRunner" value="PLATFORM" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/staticviewmodelstore" />
-            <option value="$PROJECT_DIR$/websocketservice" />
+            <option value="/media/attect/Data/git-project/WebSocketService" />
+            <option value="/media/attect/Data/git-project/WebSocketService/app" />
+            <option value="/media/attect/Data/git-project/WebSocketService/staticviewmodelstore" />
+            <option value="/media/attect/Data/git-project/WebSocketService/websocketservice" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
