@@ -5,7 +5,7 @@ Android WebSocket Service实现
 
 Demo可用作WebSocket测试工具
 
-基于okhttp 4.1
+基于okhttp 4.2.2
 
 这是一个LocalService，并不支持运行在独立进程中
 
