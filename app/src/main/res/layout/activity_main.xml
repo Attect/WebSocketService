@@ -72,6 +72,7 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         android:maxLines="1"
+                        android:singleLine="true"
                         android:hint="@string/address_hint"
                         android:text="@string/default_websocket_server"
                         android:background="@null"/>

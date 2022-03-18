@@ -78,7 +78,9 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         })
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null) return START_NOT_STICKY
         val defaultResult = super.onStartCommand(intent, Service.START_FLAG_REDELIVERY, startId)
         //这个方法全局只允许被跑一次
         if (instanceCommandLock) return defaultResult
@@ -88,11 +90,12 @@ open class WebSocketService : StaticViewModelLifecycleService() {
         if (intent.hasExtra(CONFIG_SERVER)) {
             if (intent.hasExtra(CONFIG_HANDSHAKE_HEADERS)) {
                 handshakeHeaders.clear()
-                handshakeHeaders.addAll(
-                    intent.getParcelableArrayListExtra(
-                        CONFIG_HANDSHAKE_HEADERS
-                    )
-                )
+                intent.getParcelableArrayListExtra<WebSocketHandshakeHeader>(
+                    CONFIG_HANDSHAKE_HEADERS
+                )?.let {
+                    handshakeHeaders.addAll(it)
+                }
+
             }
             if (intent.hasExtra(CONFIG_PING_INTERVAL)) pingInterval = intent.getLongExtra(
                 CONFIG_PING_INTERVAL, 0L
