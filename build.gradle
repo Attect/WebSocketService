@@ -8,7 +8,7 @@ buildscript {
         espresso_core_version = '3.4.0'
         junit_version = '4.13.2'
         runner_version = '1.4.0'
-        recyclerview_version = '1.0.0'
+        recyclerview_version = '1.2.1'
         cardview_version = '1.0.0'
         kotlin_version = '1.6.10'
 
